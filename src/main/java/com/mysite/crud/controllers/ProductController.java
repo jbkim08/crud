@@ -124,7 +124,7 @@ public class ProductController {
         //수정할 이미지 있으면 기존이미지 삭제하고 수정 이미지를 업로드함
         if(!productDto.getImageFile().isEmpty()){
             String uploadDir = "public/images/";
-            Path oldImagePath = Paths.get(uploadDir + productDto.getImageFile());
+            Path oldImagePath = Paths.get(uploadDir + product.getImageFileName());
 
             try {
                 Files.delete(oldImagePath);
@@ -154,6 +154,26 @@ public class ProductController {
         repo.save(product); //수정이 완료된 제품객체로 DB 업데이트함
 
         return "redirect:/products/";
+    }
+
+    //삭제하기
+    @GetMapping("/delete")
+    public String deleteProduct(@RequestParam int id) {
+
+        try {
+            Product product = repo.findById(id).get();
+            //이미지 파일 삭제
+            String uploadDir = "public/images/";
+            Path imagePath = Paths.get(uploadDir + product.getImageFileName());
+            Files.delete(imagePath);
+            //DB 에서 제품 삭제
+            repo.delete(product);
+
+        } catch (Exception e){
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        return "redirect:/products";
     }
 
 }

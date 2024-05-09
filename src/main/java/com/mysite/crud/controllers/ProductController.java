@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -109,4 +110,50 @@ public class ProductController {
         return "products/editProduct";
     }
 
+    //수정하기
+    @PostMapping("/edit")
+    public String editProduct(@Valid ProductDto productDto, BindingResult bindingResult,
+                              @RequestParam int id, Model model) {
+
+        Product product = repo.findById(id).get();
+        model.addAttribute("product", product);
+
+        if (bindingResult.hasErrors()) {
+            return "products/editProduct";
+        }
+        //수정할 이미지 있으면 기존이미지 삭제하고 수정 이미지를 업로드함
+        if(!productDto.getImageFile().isEmpty()){
+            String uploadDir = "public/images/";
+            Path oldImagePath = Paths.get(uploadDir + productDto.getImageFile());
+
+            try {
+                Files.delete(oldImagePath);
+            } catch (Exception e){
+                System.out.println("Error: " + e.getMessage());
+            }
+            //새 이미지 업로드
+            MultipartFile image = productDto.getImageFile();
+            Date createDate = new Date();
+            String storeFileName = createDate.getTime() + "_" + image.getOriginalFilename();
+
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, Paths.get(uploadDir+storeFileName), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+
+            product.setImageFileName(storeFileName); //이미지 파일 이름을 업데이트
+        }
+
+
+        return "redirect:/products/";
+    }
+
 }
+
+
+
+
+
+
+

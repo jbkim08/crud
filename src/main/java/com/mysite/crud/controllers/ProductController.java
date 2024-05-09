@@ -144,7 +144,14 @@ public class ProductController {
 
             product.setImageFileName(storeFileName); //이미지 파일 이름을 업데이트
         }
+        //이미지 제외한 수정 내용을 업데이트
+        product.setName(productDto.getName());
+        product.setBrand(productDto.getBrand());
+        product.setCategory(productDto.getCategory());
+        product.setPrice(productDto.getPrice());
+        product.setDescription(productDto.getDescription());
 
+        repo.save(product); //수정이 완료된 제품객체로 DB 업데이트함
 
         return "redirect:/products/";
     }
